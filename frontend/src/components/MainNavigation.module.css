@@ -3,12 +3,13 @@
   margin: auto;
   padding: 2rem;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
 }
 
 .list {
   display: flex;
   gap: 1rem;
+  font-weight: bold;
 }
 
 .list a {
@@ -19,4 +20,5 @@
 .list a:hover,
 .list a.active {
   color: var(--color-primary-800);
+  text-decoration: underline;
 }

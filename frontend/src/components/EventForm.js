@@ -1,122 +1,122 @@
 import {
   Form,
+  redirect,
+  useActionData,
   useNavigate,
   useNavigation,
-  useActionData,
-  json,
-  redirect
-} from 'react-router-dom';
+} from "react-router-dom";
 
-import classes from './EventForm.module.css';
+import classes from "./EventForm.module.css";
+import { getLoginToken } from "../util/authFunctions";
 
 function EventForm({ method, event }) {
-  const data = useActionData();
   const navigate = useNavigate();
   const navigation = useNavigation();
-
-  const isSubmitting = navigation.state === 'submitting';
+  const actionData = useActionData();
+  const isSubmitting = navigation.state === "submitting";
 
   function cancelHandler() {
-    navigate('..');
+    navigate("..");
   }
 
   return (
-    <Form method={method} className={classes.form}>
-      {data && data.errors && (
-        <ul>
-          {Object.values(data.errors).map((err) => (
-            <li key={err}>{err}</li>
-          ))}
-        </ul>
-      )}
-      <p>
-        <label htmlFor="title">Title</label>
-        <input
-          id="title"
-          type="text"
-          name="title"
-          required
-          defaultValue={event ? event.title : ''}
-        />
-      </p>
-      <p>
-        <label htmlFor="image">Image</label>
-        <input
-          id="image"
-          type="url"
-          name="image"
-          required
-          defaultValue={event ? event.image : ''}
-        />
-      </p>
-      <p>
-        <label htmlFor="date">Date</label>
-        <input
-          id="date"
-          type="date"
-          name="date"
-          required
-          defaultValue={event ? event.date : ''}
-        />
-      </p>
-      <p>
-        <label htmlFor="description">Description</label>
-        <textarea
-          id="description"
-          name="description"
-          rows="5"
-          required
-          defaultValue={event ? event.description : ''}
-        />
-      </p>
-      <div className={classes.actions}>
-        <button type="button" onClick={cancelHandler} disabled={isSubmitting}>
-          Cancel
-        </button>
-        <button disabled={isSubmitting}>
-          {isSubmitting ? 'Submitting...' : 'Save'}
-        </button>
-      </div>
-    </Form>
+    <>
+      <Form method={method} className={classes.form}>
+        {actionData && actionData.errors && (
+          <ul>
+            {Object.values(actionData.errors).map((err) => (
+              <li key={err}>{err}</li>
+            ))}
+          </ul>
+        )}
+        <p>
+          <label htmlFor="title">Title</label>
+          <input
+            disabled={isSubmitting}
+            id="title"
+            type="text"
+            name="title"
+            required
+            defaultValue={event ? event.title : ""}
+          />
+        </p>
+        <p>
+          <label htmlFor="image">Image</label>
+          <input
+            disabled={isSubmitting}
+            id="image"
+            type="url"
+            name="image"
+            required
+            defaultValue={event ? event.image : ""}
+          />
+        </p>
+        <p>
+          <label htmlFor="date">Date</label>
+          <input
+            disabled={isSubmitting}
+            id="date"
+            type="date"
+            name="date"
+            required
+            defaultValue={event ? event.date : ""}
+          />
+        </p>
+        <p>
+          <label htmlFor="description">Description</label>
+          <textarea
+            disabled={isSubmitting}
+            id="description"
+            name="description"
+            rows="5"
+            required
+            defaultValue={event ? event.description : ""}
+          />
+        </p>
+        <div className={classes.actions}>
+          <button type="button" onClick={cancelHandler} disabled={isSubmitting}>
+            Cancel
+          </button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Save"}
+          </button>
+        </div>
+      </Form>
+    </>
   );
 }
 
 export default EventForm;
 
-export async function action({ request, params }) {
+export const action = async ({ request, params }) => {
   const method = request.method;
-  const data = await request.formData();
+  const formData = Object.fromEntries(await request.formData());
+  console.log("Method: " + request.method);
 
-  const eventData = {
-    title: data.get('title'),
-    image: data.get('image'),
-    date: data.get('date'),
-    description: data.get('description'),
-  };
+  let url = "http://localhost:8080/events";
 
-  let url = 'http://localhost:8080/events';
-
-  if (method === 'PATCH') {
-    const eventId = params.eventId;
-    url = 'http://localhost:8080/events/' + eventId;
+  if (method === "PATCH") {
+    url = url + "/" + params.eventId;
   }
 
   const response = await fetch(url, {
     method: method,
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + getLoginToken(),
     },
-    body: JSON.stringify(eventData),
+    body: JSON.stringify(formData),
   });
-
+  //console.log(response.status);
   if (response.status === 422) {
     return response;
   }
 
   if (!response.ok) {
-    throw json({ message: 'Could not save event.' }, { status: 500 });
+    throw new Response(JSON.stringify({ message: "Unable to fetch events." }), {
+      status: response.status,
+    });
   }
 
-  return redirect('/events');
-}
-
+  return redirect("/events");
+};
