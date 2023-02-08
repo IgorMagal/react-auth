@@ -22,3 +22,17 @@
   color: var(--color-primary-800);
   text-decoration: underline;
 }
+
+.button {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.15rem 1.5rem;
+  border-radius: 4px;
+  background-color: var(--color-gray-300);
+  color: var(--color-gray-800);
+  border: none;
+}
+
+button:hover {
+  background-color: var(--color-primary-300);
+}

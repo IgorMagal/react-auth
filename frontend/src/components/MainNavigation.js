@@ -1,4 +1,3 @@
-import { getLoginToken } from "../util/authFunctions";
 import classes from "./MainNavigation.module.css";
 import { NavLink, Form, useRouteLoaderData } from "react-router-dom";
 
@@ -53,7 +52,9 @@ function MainNavigation() {
           <li>
             {token ? (
               <Form action="logout" method="post">
-                <button type="submit">Logout</button>
+                <button className={classes.button} type="submit">
+                  Logout
+                </button>
               </Form>
             ) : (
               <NavLink
